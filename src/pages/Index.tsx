@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FileDrop } from '@/components/FileDrop';
 import { RecordPreviewTable } from '@/components/RecordPreviewTable';
 import { IngestionForm } from '@/components/IngestionForm';
+import { ApiTester } from '@/components/ApiTester';
 import { Database, Upload, Send, Building, Users } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -115,6 +116,9 @@ const Index = () => {
 
           {/* Ingestion Form */}
           <IngestionForm records={records} tableType={selectedTableType} />
+          
+          {/* API Tester for debugging */}
+          <ApiTester />
         </div>
       </div>
     </div>
