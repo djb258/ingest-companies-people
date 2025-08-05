@@ -15,7 +15,9 @@ interface IngestionFormProps {
 
 export const IngestionForm: React.FC<IngestionFormProps> = ({ records, tableType }) => {
   const [endpoint, setEndpoint] = useState('https://render-marketing-db.onrender.com');
-  const [targetTable, setTargetTable] = useState('');
+  const [targetTable, setTargetTable] = useState(
+    tableType === 'companies' ? 'company.marketing_company' : ''
+  );
   const [isUploading, setIsUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<UploadResponse | null>(null);
   const { toast } = useToast();
