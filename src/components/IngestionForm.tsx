@@ -10,9 +10,10 @@ import { useToast } from '@/hooks/use-toast';
 
 interface IngestionFormProps {
   records: Record<string, any>[];
+  tableType: 'companies' | 'people';
 }
 
-export const IngestionForm: React.FC<IngestionFormProps> = ({ records }) => {
+export const IngestionForm: React.FC<IngestionFormProps> = ({ records, tableType }) => {
   const [endpoint, setEndpoint] = useState('https://your-render-api.onrender.com');
   const [targetTable, setTargetTable] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -72,9 +73,14 @@ export const IngestionForm: React.FC<IngestionFormProps> = ({ records }) => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-foreground">Send to API</h2>
-          <Badge variant={records.length > 0 ? "default" : "secondary"}>
-            {records.length} records ready
-          </Badge>
+          <div className="flex items-center space-x-2">
+            <Badge variant="outline" className="capitalize">
+              {tableType}
+            </Badge>
+            <Badge variant={records.length > 0 ? "default" : "secondary"}>
+              {records.length} records ready
+            </Badge>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
