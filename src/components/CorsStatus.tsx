@@ -1,3 +1,5 @@
+// Legacy component - Use the new template version instead!
+// Import from: '@/cors-template' for the enhanced version
 import { useEffect, useState } from 'react';
 import { checkCorsHealth } from '@/utils/corsDebugger';
 
