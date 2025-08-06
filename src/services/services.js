@@ -65,6 +65,52 @@ export const postCompany = async (companyData) => {
   }
 };
 
+// Bulk upload to marketing companies endpoint with proper structure
+export const postMarketingCompanies = async (records, targetTable = 'company.marketing_company') => {
+  try {
+    const requestData = {
+      records: records,
+      target_table: targetTable
+    };
+    
+    console.log('🚀 Sending to /api/marketing/companies:', requestData);
+    
+    const response = await apiClient.post('/api/marketing/companies', requestData);
+    
+    console.log('✅ Response received:', response.data);
+    
+    return {
+      success: true,
+      data: response.data,
+      inserted: response.data.inserted || records.length,
+      failed: response.data.failed || 0,
+      errors: response.data.errors || [],
+      message: response.data.message || 'Companies uploaded successfully',
+    };
+  } catch (error) {
+    console.error('❌ Upload error:', error);
+    
+    // Enhanced error details
+    const errorDetails = {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      url: error.config?.url,
+      method: error.config?.method,
+      headers: error.config?.headers,
+    };
+    
+    console.error('🔍 Error details:', errorDetails);
+    
+    return {
+      success: false,
+      error: errorDetails,
+      message: `Failed to upload companies: ${error.message}`,
+    };
+  }
+};
+
 // Apollo Data endpoints
 export const getApolloData = async () => {
   try {

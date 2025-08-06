@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Send, AlertCircle, CheckCircle } from 'lucide-react';
-import { uploadToRender, UploadResponse } from '@/utils/uploadToRender';
+import { postMarketingCompanies } from '@/services/services';
 import { useToast } from '@/hooks/use-toast';
 
 interface IngestionFormProps {
@@ -19,7 +19,7 @@ export const IngestionForm: React.FC<IngestionFormProps> = ({ records, tableType
     tableType === 'companies' ? 'company.marketing_company' : ''
   );
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadResult, setUploadResult] = useState<UploadResponse | null>(null);
+  const [uploadResult, setUploadResult] = useState<any | null>(null);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,19 +47,19 @@ export const IngestionForm: React.FC<IngestionFormProps> = ({ records, tableType
     setUploadResult(null);
 
     try {
-      const uploadData = {
-        records,
-        ...(targetTable.trim() && { target_table: targetTable.trim() })
-      };
-
-      const result = await uploadToRender(endpoint.trim(), uploadData);
+      const result = await postMarketingCompanies(records, targetTable.trim() || 'company.marketing_company');
       setUploadResult(result);
       
-      toast({
-        title: "Upload Successful",
-        description: `Inserted ${result.inserted} records, ${result.failed} failed`,
-      });
+      if (result.success) {
+        toast({
+          title: "Upload Successful",
+          description: `Inserted ${result.inserted} records, ${result.failed} failed`,
+        });
+      } else {
+        throw new Error(result.message);
+      }
     } catch (error) {
+      console.error('Upload error in component:', error);
       toast({
         variant: "destructive",
         title: "Upload Failed",
