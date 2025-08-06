@@ -135,19 +135,23 @@ export function createRenderApiClient(config = {}) {
   return apiClient;
 }
 
-// Default client factory using environment variables
+// Default client factory using Render environment variable
 export function createDefaultApiClient() {
-  const baseURL = import.meta.env.VITE_API_URL;
+  const baseURL = import.meta.env.VITE_RENDER_API_URL;
   const enableLogging = import.meta.env.VITE_ENABLE_API_LOGGING === 'true';
   
   if (!baseURL) {
-    console.warn('⚠️ VITE_API_URL not set in environment variables');
+    console.warn('⚠️ VITE_RENDER_API_URL not set in environment variables');
+    console.warn('💡 Set VITE_RENDER_API_URL=https://your-render-app.onrender.com in your .env file');
     return null;
   }
 
   return createRenderApiClient({
     baseURL,
     enableLogging,
+    customHeaders: {
+      'X-Client-Source': 'lovable-cors-template'
+    }
   });
 }
 

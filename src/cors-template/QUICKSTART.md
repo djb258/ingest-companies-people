@@ -9,8 +9,8 @@
 
 ### 2. Set Environment (10 seconds)
 ```bash
-# In .env file:
-VITE_API_URL=https://your-render-app.onrender.com
+# In .env file (ONLY one variable needed!):
+VITE_RENDER_API_URL=https://your-render-app.onrender.com
 ```
 
 ### 3. Add Status Component (30 seconds)
@@ -18,7 +18,7 @@ VITE_API_URL=https://your-render-app.onrender.com
 // In any component:
 import { CorsStatus } from '@/cors-template';
 
-<CorsStatus apiUrl={import.meta.env.VITE_API_URL} />
+<CorsStatus apiUrl={import.meta.env.VITE_RENDER_API_URL} />
 ```
 
 ### 4. Verify (10 seconds)

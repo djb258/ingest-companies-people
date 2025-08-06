@@ -30,7 +30,7 @@ export function getApiClient() {
  */
 export const checkHealth = async () => {
   if (!apiClient) {
-    throw new Error('API client not configured. Set VITE_API_URL environment variable.');
+    throw new Error('API client not configured. Set VITE_RENDER_API_URL environment variable.');
   }
 
   try {
@@ -107,32 +107,43 @@ export const postData = async (endpoint, data) => {
 // =============================================================================
 
 /**
- * Format data for Render bulk insert
+ * Format data for Neon database operations via Render
  * @param {Array|Object} records - Single record or array of records
- * @param {string} targetTable - Target table name (e.g., "company.marketing_company")
- * @returns {Object} Formatted payload for Render
+ * @param {string} targetTable - Neon table name (e.g., "marketing_companies", "apollo_data")
+ * @returns {Object} Formatted payload for Render API
  */
-export const formatRenderPayload = (records, targetTable) => {
+export const formatNeonPayload = (records, targetTable) => {
+  if (!targetTable) {
+    throw new Error('Target table name is required for Neon operations');
+  }
+  
   const recordsArray = Array.isArray(records) ? records : [records];
   
   return {
+    table: targetTable,
     records: recordsArray.map(record => ({
       ...record,
-      created_at: record.created_at || new Date().toISOString()
+      created_at: record.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString()
     })),
-    target_table: targetTable
+    operation: 'bulk_insert',
+    source: 'lovable-cors-template'
   };
 };
 
 /**
- * Insert records into Render database
+ * Insert records into Neon database via Render API
  * @param {Array|Object} records - Records to insert
- * @param {string} targetTable - Target table name
+ * @param {string} targetTable - Neon table name
  * @returns {Promise<Object>} Insert response
  */
 export const insertRecords = async (records, targetTable) => {
-  const payload = formatRenderPayload(records, targetTable);
-  return await postData('/insert', payload);
+  if (!targetTable) {
+    throw new Error('Target table name is required for Neon operations');
+  }
+  
+  const payload = formatNeonPayload(records, targetTable);
+  return await postData('/api/neon/insert', payload);
 };
 
 // =============================================================================
@@ -163,7 +174,7 @@ export const createCompany = async (companyData) => {
     ...companyData // Include any additional fields
   };
 
-  return await insertRecords(record, "company.marketing_company");
+  return await insertRecords(record, "marketing_companies");
 };
 
 /**
@@ -172,7 +183,7 @@ export const createCompany = async (companyData) => {
  * @param {string} targetTable - Target table (default: "company.marketing_company")
  * @returns {Promise<Object>} Upload response
  */
-export const postMarketingCompanies = async (companies, targetTable = "company.marketing_company") => {
+export const postMarketingCompanies = async (companies, targetTable = "marketing_companies") => {
   return await insertRecords(companies, targetTable);
 };
 
@@ -256,7 +267,7 @@ export default {
   getData,
   postData,
   insertRecords,
-  formatRenderPayload,
+  formatNeonPayload,
   
   // Company operations
   getCompanies,

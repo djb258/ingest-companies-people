@@ -61,6 +61,14 @@ export {
   FIELD_MAPPINGS
 } from './utils/payloadFormatter.js';
 
+export {
+  NEON_TABLES,
+  isValidNeonTable,
+  formatForNeonTable,
+  getNeonEndpoint,
+  validateNeonRecord
+} from './utils/neonTableHelpers.js';
+
 // =============================================================================
 // TYPES - TypeScript definitions
 // =============================================================================
@@ -114,15 +122,16 @@ export function setupRenderApi(apiUrl: string, options: any = {}) {
 }
 
 /**
- * Environment-based setup using VITE_API_URL
+ * Environment-based setup using VITE_RENDER_API_URL
  * @returns {Object|null} Configured services or null if no URL set
  */
 export function setupFromEnvironment() {
-  const apiUrl = import.meta.env.VITE_API_URL;
+  const apiUrl = import.meta.env.VITE_RENDER_API_URL;
   const enableLogging = import.meta.env.VITE_ENABLE_API_LOGGING === 'true';
   
   if (!apiUrl) {
-    console.warn('⚠️ VITE_API_URL not found in environment variables');
+    console.warn('⚠️ VITE_RENDER_API_URL not found in environment variables');
+    console.warn('💡 Add VITE_RENDER_API_URL=https://your-render-app.onrender.com to your .env file');
     return null;
   }
   
