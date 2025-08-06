@@ -3,15 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle, XCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, RefreshCw, Globe } from 'lucide-react';
 import { checkHealth } from '@/services/services';
+import { checkCorsHealth, quickCorsTest } from '@/utils/corsDebugger';
 
 const ApiConnectionStatus = () => {
   const [status, setStatus] = useState('idle'); // idle, checking, connected, error
   const [lastCheck, setLastCheck] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [logs, setLogs] = useState([]);
+  const [corsResult, setCorsResult] = useState(null);
 
   const checkConnection = async () => {
     setIsLoading(true);
@@ -34,6 +35,16 @@ const ApiConnectionStatus = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const runCorsTest = async () => {
+    setIsLoading(true);
+    setCorsResult(null);
+    
+    const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://render-marketing-db.onrender.com';
+    const result = await quickCorsTest(apiBaseUrl);
+    setCorsResult(result);
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -96,28 +107,61 @@ const ApiConnectionStatus = () => {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">
-              Endpoint: render-marketing-db.onrender.com
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={checkConnection}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <RefreshCw className="w-3 h-3 animate-spin" />
-              ) : (
-                'Test Connection'
-              )}
-            </Button>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">
+                Endpoint: render-marketing-db.onrender.com
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={runCorsTest}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <>
+                      <Globe className="w-3 h-3 mr-1" />
+                      CORS Test
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={checkConnection}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                  ) : (
+                    'Full Test'
+                  )}
+                </Button>
+              </div>
+            </div>
           </div>
           
           {lastCheck && (
             <div className="text-xs text-muted-foreground">
               Last checked: {lastCheck.toLocaleTimeString()}
             </div>
+          )}
+          
+          {corsResult && (
+            <Alert variant={corsResult.success ? "default" : "destructive"}>
+              <Globe className="h-4 w-4" />
+              <AlertDescription className="text-xs">
+                <strong>CORS Test:</strong> {corsResult.message}
+                {corsResult.details && (
+                  <pre className="mt-1 text-xs opacity-75">
+                    {JSON.stringify(corsResult.details, null, 2)}
+                  </pre>
+                )}
+              </AlertDescription>
+            </Alert>
           )}
           
           {error && (
@@ -137,6 +181,7 @@ const ApiConnectionStatus = () => {
                 setError(null);
                 setStatus('idle');
                 setLastCheck(null);
+                setCorsResult(null);
               }}
               className="text-xs"
             >
