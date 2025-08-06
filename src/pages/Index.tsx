@@ -3,6 +3,8 @@ import { FileDrop } from '@/components/FileDrop';
 import { RecordPreviewTable } from '@/components/RecordPreviewTable';
 import { IngestionForm } from '@/components/IngestionForm';
 import { ApiTester } from '@/components/ApiTester';
+import ApiConnectionStatus from '@/components/ApiConnectionStatus';
+import EnhancedApiTester from '@/components/EnhancedApiTester';
 import { Database, Upload, Send, Building, Users } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -117,8 +119,16 @@ const Index = () => {
           {/* Ingestion Form */}
           <IngestionForm records={records} tableType={selectedTableType} />
           
-          {/* API Tester for debugging */}
-          <ApiTester />
+          {/* API Connection & Testing Section */}
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ApiConnectionStatus />
+              <div className="lg:col-span-2">
+                <EnhancedApiTester />
+              </div>
+            </div>
+            <ApiTester />
+          </div>
         </div>
       </div>
     </div>
