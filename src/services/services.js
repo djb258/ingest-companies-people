@@ -1,6 +1,9 @@
 import apiClient from './api';
 
-// Health check endpoint
+// =============================================================================
+// HEALTH & STATUS ENDPOINTS
+// =============================================================================
+
 export const checkHealth = async () => {
   try {
     const response = await apiClient.get('/api/health');
@@ -29,13 +32,16 @@ export const checkHealth = async () => {
   }
 };
 
-// Marketing Companies endpoints
+// =============================================================================
+// MARKETING COMPANIES ENDPOINTS
+// =============================================================================
+
 export const getCompanies = async () => {
   try {
     const response = await apiClient.get('/api/marketing/companies');
     return {
       success: true,
-      data: response.data.data || response.data,
+      data: response.data.companies || response.data.data || response.data,
       count: response.data.count || 0,
       message: response.data.message || 'Companies fetched successfully',
     };
@@ -48,7 +54,7 @@ export const getCompanies = async () => {
   }
 };
 
-export const postCompany = async (companyData) => {
+export const createCompany = async (companyData) => {
   try {
     const response = await apiClient.post('/api/marketing/companies', companyData);
     return {
@@ -111,13 +117,16 @@ export const postMarketingCompanies = async (records, targetTable = 'company.mar
   }
 };
 
-// Apollo Data endpoints
+// =============================================================================
+// APOLLO DATA ENDPOINTS
+// =============================================================================
+
 export const getApolloData = async () => {
   try {
     const response = await apiClient.get('/api/apollo/raw');
     return {
       success: true,
-      data: response.data.data || response.data,
+      data: response.data.apollo_data || response.data.data || response.data,
       count: response.data.count || 0,
       message: response.data.message || 'Apollo data fetched successfully',
     };
@@ -146,6 +155,10 @@ export const postApolloData = async (apolloData) => {
     };
   }
 };
+
+// =============================================================================
+// BULK UPLOAD ENDPOINTS
+// =============================================================================
 
 // Legacy upload function (for backward compatibility)
 export const uploadRecords = async (records, targetTable = 'companies') => {

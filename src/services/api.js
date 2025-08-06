@@ -1,20 +1,21 @@
 import axios from 'axios';
 
-// Replace with your actual Render API URL
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://render-marketing-db.onrender.com';
+// Render API base URL - no API key required (handled server-side)
+const BASE_URL = 'https://render-marketing-db.onrender.com';
 
-// Create axios instance with simplified CORS-friendly configuration
+// Create axios instance with CORS-safe configuration for Render
 const apiClient = axios.create({
   baseURL: BASE_URL,
   timeout: 30000,
-  withCredentials: true, // Enable credentials for CORS
+  withCredentials: true, // Required for CORS with credentials
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest', // CORS-friendly header
   },
 });
 
-// Request interceptor for debugging and auth
+// Request interceptor with retry logic
 apiClient.interceptors.request.use(
   (config) => {
     console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`);
@@ -30,25 +31,32 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor for error handling
+// Response interceptor with enhanced error handling and retry
 apiClient.interceptors.response.use(
   (response) => {
     console.log(`✅ API Response: ${response.status} ${response.config.url}`);
     console.log('📄 Response Data:', response.data);
     return response;
   },
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+    
     console.error('❌ API Error:', error);
     
-    if (error.code === 'ERR_NETWORK') {
-      console.error('🌐 Network Error - Possible CORS issue');
+    // Retry logic for network errors (up to 3 attempts)
+    if (error.code === 'ERR_NETWORK' && !originalRequest._retry && originalRequest._retryCount < 2) {
+      originalRequest._retry = true;
+      originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
+      
+      console.log(`🔄 Retrying request (attempt ${originalRequest._retryCount + 1}/3)`);
+      
+      // Wait before retry
+      await new Promise(resolve => setTimeout(resolve, 1000 * originalRequest._retryCount));
+      
+      return apiClient(originalRequest);
     }
     
-    if (error.response?.status === 0) {
-      console.error('🚫 CORS Error - Request blocked by browser');
-    }
-    
-    // Enhanced error object
+    // Enhanced error categorization
     const enhancedError = {
       message: error.message,
       status: error.response?.status,
@@ -58,10 +66,24 @@ apiClient.interceptors.response.use(
       config: {
         url: error.config?.url,
         method: error.config?.method,
-        headers: error.config?.headers,
+        baseURL: error.config?.baseURL,
       },
       isCorsError: error.code === 'ERR_NETWORK' || error.response?.status === 0,
+      isNetworkError: error.code === 'ERR_NETWORK',
+      isTimeout: error.code === 'ECONNABORTED',
+      retryCount: originalRequest._retryCount || 0,
     };
+    
+    // Specific error logging
+    if (enhancedError.isCorsError) {
+      console.error('🚫 CORS Error - Check server CORS configuration');
+    } else if (enhancedError.isTimeout) {
+      console.error('⏰ Timeout Error - Request took too long');
+    } else if (error.response?.status >= 500) {
+      console.error('🔥 Server Error - Backend issue');
+    } else if (error.response?.status >= 400) {
+      console.error('📝 Client Error - Check request format');
+    }
     
     return Promise.reject(enhancedError);
   }
