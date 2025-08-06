@@ -11,6 +11,7 @@ const ApiConnectionStatus = () => {
   const [lastCheck, setLastCheck] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [logs, setLogs] = useState([]);
 
   const checkConnection = async () => {
     setIsLoading(true);
@@ -127,6 +128,21 @@ const ApiConnectionStatus = () => {
               </AlertDescription>
             </Alert>
           )}
+          
+          <div className="flex justify-end">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setError(null);
+                setStatus('idle');
+                setLastCheck(null);
+              }}
+              className="text-xs"
+            >
+              Clear Status
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
