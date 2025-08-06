@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Replace with your actual Render API URL
-const BASE_URL = process.env.VITE_API_URL || 'https://render-marketing-db.onrender.com';
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://render-marketing-db.onrender.com';
 
 // Create axios instance with CORS-friendly configuration
 const apiClient = axios.create({
