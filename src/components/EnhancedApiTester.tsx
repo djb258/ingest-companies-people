@@ -8,7 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   checkHealth,
   getCompanies,
-  postCompany,
+  createCompany,
   getApolloData,
   postApolloData,
   uploadRecords
@@ -67,7 +67,7 @@ const EnhancedApiTester = () => {
       email: 'test@company.com',
       industry: 'Technology'
     };
-    await testEndpoint('Post Company', postCompany, sampleCompany);
+    await testEndpoint('Post Company', createCompany, sampleCompany);
 
     // Test 4: Get Apollo Data
     await testEndpoint('Get Apollo Data', getApolloData);
@@ -103,7 +103,7 @@ const EnhancedApiTester = () => {
         await testEndpoint('Get Companies', getCompanies);
         break;
       case 'companies-post':
-        await testEndpoint('Post Company', postCompany, {
+        await testEndpoint('Post Company', createCompany, {
           name: 'Single Test Company',
           email: 'single@test.com'
         });
