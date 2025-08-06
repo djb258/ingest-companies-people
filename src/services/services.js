@@ -56,7 +56,23 @@ export const getCompanies = async () => {
 
 export const createCompany = async (companyData) => {
   try {
-    const response = await apiClient.post('/api/marketing/companies', companyData);
+    // Ensure proper field mapping and add timestamp if not provided
+    const record = {
+      company_name: companyData.company_name || companyData.name,
+      domain: companyData.domain,
+      industry: companyData.industry,
+      employee_count: companyData.employee_count,
+      created_at: companyData.created_at || new Date().toISOString(),
+      ...companyData // Include any additional fields
+    };
+
+    // Use the exact payload format required by Render
+    const payload = {
+      records: [record],
+      target_table: "company.marketing_company"
+    };
+
+    const response = await apiClient.post('/insert', payload);
     return {
       success: true,
       data: response.data.data || response.data,
