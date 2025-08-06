@@ -73,9 +73,9 @@ export const postMarketingCompanies = async (records, targetTable = 'company.mar
       target_table: targetTable
     };
     
-    console.log('🚀 Sending to /api/marketing/companies:', requestData);
+    console.log('🚀 Sending to /insert:', requestData);
     
-    const response = await apiClient.post('/api/marketing/companies', requestData);
+    const response = await apiClient.post('/insert', requestData);
     
     console.log('✅ Response received:', response.data);
     
