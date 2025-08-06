@@ -5,6 +5,7 @@ import { IngestionForm } from '@/components/IngestionForm';
 import { ApiTester } from '@/components/ApiTester';
 import ApiConnectionStatus from '@/components/ApiConnectionStatus';
 import EnhancedApiTester from '@/components/EnhancedApiTester';
+import CorsStatus from '@/components/CorsStatus';
 import { Database, Upload, Send, Building, Users } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -24,13 +25,18 @@ const Index = () => {
       {/* Header */}
       <div className="bg-card shadow-lg border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-primary rounded-lg">
-              <Database className="h-6 w-6 text-primary-foreground" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-primary rounded-lg">
+                <Database className="h-6 w-6 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">IUT - Ingestion Uploader Template</h1>
+                <p className="text-muted-foreground">Upload, preview, and send data to your Render API endpoint</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">IUT - Ingestion Uploader Template</h1>
-              <p className="text-muted-foreground">Upload, preview, and send data to your Render API endpoint</p>
+            <div className="flex items-center space-x-4">
+              <CorsStatus />
             </div>
           </div>
         </div>
