@@ -1,17 +1,18 @@
 import axios from 'axios';
 
-// Use the existing Render API URL from your current setup
-const BASE_URL = 'https://render-marketing-db.onrender.com';
+// Replace with your actual Render API URL
+const BASE_URL = process.env.VITE_API_URL || 'https://render-marketing-db.onrender.com';
 
 // Create axios instance with CORS-friendly configuration
 const apiClient = axios.create({
   baseURL: BASE_URL,
   timeout: 30000,
-  withCredentials: false, // Set to true only if your API requires credentials
+  withCredentials: true, // Enable credentials for CORS
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     'X-Requested-With': 'XMLHttpRequest',
+    'Origin': window.location.origin,
   },
 });
 
