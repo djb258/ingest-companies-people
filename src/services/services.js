@@ -1,4 +1,4 @@
-import apiClient from './api.js';
+import apiClient from './api';
 
 // Health check endpoint
 export const checkHealth = async () => {

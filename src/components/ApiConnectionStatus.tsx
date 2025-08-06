@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, XCircle, AlertCircle, RefreshCw } from 'lucide-react';
-import { checkHealth } from '@/services/services.js';
+import { checkHealth } from '@/services/services';
 
 const ApiConnectionStatus = () => {
   const [status, setStatus] = useState('idle'); // idle, checking, connected, error

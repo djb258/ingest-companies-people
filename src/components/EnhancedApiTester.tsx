@@ -12,7 +12,7 @@ import {
   getApolloData,
   postApolloData,
   uploadRecords
-} from '@/services/services.js';
+} from '@/services/services';
 
 const EnhancedApiTester = () => {
   const [logs, setLogs] = useState('');
