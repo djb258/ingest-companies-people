@@ -91,12 +91,26 @@ export const mcpDirectInsert = async (records, targetTable = 'marketing.company_
     
     console.log('🔌 MCP Response received:', {
       status: response.status,
-      data: response.data
+      data: response.data,
+      fullResponse: JSON.stringify(response.data, null, 2)
     });
 
     // Parse the actual response structure from your API
     const responseData = response.data;
-    const recordCount = Array.isArray(responseData.data?.records) ? responseData.data.records.length : records.length;
+    
+    // Debug: Log the actual response structure
+    console.log('🔍 Response structure analysis:', {
+      hasData: !!responseData.data,
+      hasRecords: !!responseData.data?.records,
+      recordsType: typeof responseData.data?.records,
+      recordsLength: Array.isArray(responseData.data?.records) ? responseData.data.records.length : 'not array',
+      actualInserted: responseData.inserted || responseData.rows_affected || responseData.count,
+      message: responseData.message,
+      success: responseData.success
+    });
+    
+    const recordCount = responseData.inserted || responseData.rows_affected || responseData.count || 
+                       (Array.isArray(responseData.data?.records) ? responseData.data.records.length : 0);
     
     return {
       success: true,
