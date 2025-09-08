@@ -7,11 +7,12 @@ const MCP_BASE_URL = import.meta.env.VITE_API_URL || 'https://render-marketing-d
 // Create axios instance optimized for MCP communication
 const mcpApiClient = axios.create({
   baseURL: MCP_BASE_URL,
-  timeout: 60000, // Longer timeout for MCP operations
+  timeout: 30000,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'X-MCP-Client': 'ingest-companies-people',
+    'X-Requested-With': 'XMLHttpRequest',
   },
 });
 
