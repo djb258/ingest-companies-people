@@ -17,7 +17,7 @@ interface IngestionFormProps {
 export const IngestionForm: React.FC<IngestionFormProps> = ({ records, tableType }) => {
   const [endpoint, setEndpoint] = useState('https://render-marketing-db.onrender.com');
   const [targetTable, setTargetTable] = useState(
-    tableType === 'companies' ? 'marketing db.intake.company_raw_intake' : ''
+    tableType === 'companies' ? 'marketing-db.intake.company_raw_intake' : ''
   );
   const [isUploading, setIsUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<any | null>(null);
@@ -30,7 +30,7 @@ export const IngestionForm: React.FC<IngestionFormProps> = ({ records, tableType
     console.log('🚀 Form submission started with:', {
       recordsLength: records.length,
       sampleRecord: records[0],
-      targetTable: targetTable.trim() || 'marketing db.intake.company_raw_intake',
+      targetTable: targetTable.trim() || 'marketing-db.intake.company_raw_intake',
       endpoint,
       useMCP
     });
@@ -62,11 +62,11 @@ export const IngestionForm: React.FC<IngestionFormProps> = ({ records, tableType
       if (useMCP) {
         // Use MCP direct insertion to bypass CORS
         console.log('🔌 Using MCP Direct Insert (no CORS issues)');
-        result = await mcpDirectInsert(records, targetTable.trim() || 'marketing db.intake.company_raw_intake');
+        result = await mcpDirectInsert(records, targetTable.trim() || 'marketing-db.intake.company_raw_intake');
       } else {
         // Use traditional API call
         console.log('📡 Using Traditional API Call');
-        result = await postMarketingCompanies(records, targetTable.trim() || 'marketing db.intake.company_raw_intake');
+        result = await postMarketingCompanies(records, targetTable.trim() || 'marketing-db.intake.company_raw_intake');
       }
       setUploadResult(result);
       
