@@ -133,16 +133,78 @@ export const parseGoogleSheetUrl = async (url: string): Promise<ParseResult> => 
     
     if (!response.ok) {
       console.error('Response not OK:', response.status, response.statusText);
+      
+      // Try alternative URL format for 400 errors
+      if (response.status === 400) {
+        console.log('Trying alternative URL format...');
+        const altCsvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}`;
+        console.log('Alternative CSV URL:', altCsvUrl);
+        
+        try {
+          const altResponse = await fetch(altCsvUrl, {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+              'Accept': 'text/csv,application/csv,text/plain,*/*'
+            }
+          });
+          
+          if (altResponse.ok) {
+            const altCsvText = await altResponse.text();
+            console.log('Alternative URL worked, CSV length:', altCsvText.length);
+            
+            if (altCsvText && altCsvText.trim().length > 0) {
+              // Parse CSV using Papa Parse
+              return new Promise((resolve) => {
+                Papa.parse(altCsvText, {
+                  header: true,
+                  skipEmptyLines: true,
+                  complete: (result) => {
+                    console.log('Google Sheets import successful:', result.data.length, 'records');
+                    resolve({ data: result.data, error: null });
+                  },
+                  error: (error) => {
+                    console.error('CSV parsing error:', error);
+                    resolve({ 
+                      data: [], 
+                      error: `Failed to parse CSV data: ${error.message}` 
+                    });
+                  }
+                });
+              });
+            }
+          }
+        } catch (altError) {
+          console.warn('Alternative URL also failed:', altError);
+        }
+      }
+      
       if (response.status === 403) {
         return {
           data: [],
-          error: 'Access denied. Please make sure the Google Sheet is publicly accessible or shared with "Anyone with the link".'
+          error: `Access denied. Please make sure the Google Sheet is shared properly:
+
+1. Open your Google Sheet
+2. Click "Share" button (top right)
+3. Change "Restricted" to "Anyone with the link"
+4. Make sure permission is set to "Viewer"
+5. Copy the new link and try again`
         };
       }
       if (response.status === 404) {
         return {
           data: [],
           error: 'Google Sheet not found. Please check the URL and make sure the sheet exists.'
+        };
+      }
+      if (response.status === 400) {
+        return {
+          data: [],
+          error: `Bad request (400). This usually means the sheet isn't properly shared. Please:
+
+1. Make sure the sheet is shared as "Anyone with the link can view"
+2. Check that the URL is complete and correct
+3. Try sharing the sheet again and copying a fresh link`
         };
       }
       return {
