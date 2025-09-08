@@ -90,7 +90,8 @@ export const mcpDirectInsert = async (records, targetTable = 'marketing.company_
     
     return {
       success: true,
-      inserted: response.data.inserted,
+      inserted: response.data.inserted || 0,
+      failed: response.data.failed || 0,
       batch_id: response.data.batch_id,
       message: response.data.message,
       connectionType: 'MCP_DIRECT',
