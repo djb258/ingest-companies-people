@@ -15,9 +15,9 @@ interface IngestionFormProps {
 }
 
 export const IngestionForm: React.FC<IngestionFormProps> = ({ records, tableType }) => {
-  const [endpoint, setEndpoint] = useState('http://localhost:3000');
+  const [endpoint, setEndpoint] = useState('https://render-marketing-db.onrender.com');
   const [targetTable, setTargetTable] = useState(
-    tableType === 'companies' ? 'marketing.company_raw_intake' : ''
+    tableType === 'companies' ? 'marketing-db.intake.company_raw_intake' : ''
   );
   const [isUploading, setIsUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<any | null>(null);
@@ -26,6 +26,14 @@ export const IngestionForm: React.FC<IngestionFormProps> = ({ records, tableType
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    console.log('🚀 Form submission started with:', {
+      recordsLength: records.length,
+      sampleRecord: records[0],
+      targetTable: targetTable.trim() || 'marketing-db.intake.company_raw_intake',
+      endpoint,
+      useMCP
+    });
     
     if (records.length === 0) {
       toast({
@@ -54,13 +62,15 @@ export const IngestionForm: React.FC<IngestionFormProps> = ({ records, tableType
       if (useMCP) {
         // Use MCP direct insertion to bypass CORS
         console.log('🔌 Using MCP Direct Insert (no CORS issues)');
-        result = await mcpDirectInsert(records, targetTable.trim() || 'marketing.company_raw_intake');
+        result = await mcpDirectInsert(records, targetTable.trim() || 'marketing-db.intake.company_raw_intake');
       } else {
         // Use traditional API call
         console.log('📡 Using Traditional API Call');
-        result = await postMarketingCompanies(records, targetTable.trim() || 'marketing.company_raw_intake');
+        result = await postMarketingCompanies(records, targetTable.trim() || 'marketing-db.intake.company_raw_intake');
       }
       setUploadResult(result);
+      
+      console.log('📊 Upload result received:', result);
       
       if (result.success) {
         toast({

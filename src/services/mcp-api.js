@@ -2,16 +2,17 @@
 import axios from 'axios';
 
 // MCP API base URL - uses MCP endpoints that bypass CORS
-const MCP_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const MCP_BASE_URL = import.meta.env.VITE_API_URL || 'https://render-marketing-db.onrender.com';
 
 // Create axios instance optimized for MCP communication
 const mcpApiClient = axios.create({
   baseURL: MCP_BASE_URL,
-  timeout: 60000, // Longer timeout for MCP operations
+  timeout: 30000,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'X-MCP-Client': 'ingest-companies-people',
+    'X-Requested-With': 'XMLHttpRequest',
   },
 });
 
@@ -54,7 +55,7 @@ mcpApiClient.interceptors.response.use(
 // MCP Health check
 export const checkMCPHealth = async () => {
   try {
-    const response = await mcpApiClient.get('/mcp/health');
+    const response = await mcpApiClient.get('/api/health');
     return {
       success: true,
       data: response.data,
@@ -82,16 +83,48 @@ export const mcpDirectInsert = async (records, targetTable = 'marketing.company_
     console.log('🔌 MCP Direct Insert:', {
       recordCount: records.length,
       targetTable,
-      batchId: requestData.batch_id
+      batchId: requestData.batch_id,
+      sampleRecord: records[0] ? JSON.stringify(records[0], null, 2) : 'No records'
     });
     
-    const response = await mcpApiClient.post('/mcp/insert', requestData);
+    const response = await mcpApiClient.post('/insert', requestData);
+    
+    console.log('🔌 MCP Response received - FULL DEBUG:', {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+      fullResponseData: JSON.stringify(response.data, null, 2),
+      dataKeys: Object.keys(response.data || {}),
+      requestPayload: {
+        recordCount: records.length,
+        targetTable,
+        sampleRecord: records[0]
+      }
+    });
+
+    // Parse the actual response structure from your API
+    const responseData = response.data;
+    
+    // Debug: Log the actual response structure
+    console.log('🔍 Response structure analysis:', {
+      hasData: !!responseData.data,
+      hasRecords: !!responseData.data?.records,
+      recordsType: typeof responseData.data?.records,
+      recordsLength: Array.isArray(responseData.data?.records) ? responseData.data.records.length : 'not array',
+      actualInserted: responseData.inserted || responseData.rows_affected || responseData.count,
+      message: responseData.message,
+      success: responseData.success
+    });
+    
+    const recordCount = responseData.inserted || responseData.rows_affected || responseData.count || 
+                       (Array.isArray(responseData.data?.records) ? responseData.data.records.length : 0);
     
     return {
       success: true,
-      inserted: response.data.inserted,
+      inserted: recordCount,
+      failed: 0, // Your API doesn't report failed records separately
       batch_id: response.data.batch_id,
-      message: response.data.message,
+      message: responseData.message || 'Records processed successfully',
       connectionType: 'MCP_DIRECT',
       corsIssues: false
     };
@@ -145,10 +178,10 @@ export const mcpBulkCompanyInsert = async (companies, batchSize = 100) => {
 // Get table information via MCP
 export const getMCPTableInfo = async () => {
   try {
-    const response = await mcpApiClient.get('/mcp/table-info');
+    const response = await mcpApiClient.get('/api/health');
     return {
       success: true,
-      tableInfo: response.data.table_info,
+      tableInfo: response.data,
       connectionType: 'MCP_DIRECT'
     };
   } catch (error) {

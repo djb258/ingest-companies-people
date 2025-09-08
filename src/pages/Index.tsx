@@ -5,6 +5,7 @@ import { IngestionForm } from '@/components/IngestionForm';
 import { ApiTester } from '@/components/ApiTester';
 import ApiConnectionStatus from '@/components/ApiConnectionStatus';
 import EnhancedApiTester from '@/components/EnhancedApiTester';
+import { McpTester } from '@/components/McpTester';
 import CorsStatus from '@/components/CorsStatus';
 import { Database, Upload, Send, Building, Users } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -129,11 +130,12 @@ const Index = () => {
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <ApiConnectionStatus />
-              <div className="lg:col-span-2">
-                <EnhancedApiTester />
-              </div>
+              <McpTester />
             </div>
-            <ApiTester />
+            <div className="grid grid-cols-1 gap-6">
+              <EnhancedApiTester />
+              <ApiTester />
+            </div>
           </div>
         </div>
       </div>
