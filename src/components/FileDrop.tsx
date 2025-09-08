@@ -203,9 +203,21 @@ export const FileDrop: React.FC<FileDropProps> = ({ onDataParsed }) => {
                       )}
                     </Button>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Make sure your Google Sheet is publicly viewable or shared with "Anyone with the link"
-                  </p>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">
+                      Make sure your Google Sheet is publicly viewable or shared with "Anyone with the link"
+                    </p>
+                    <details className="text-xs text-muted-foreground">
+                      <summary className="cursor-pointer hover:text-foreground">How to share a Google Sheet</summary>
+                      <div className="mt-2 space-y-1">
+                        <p>1. Open your Google Sheet</p>
+                        <p>2. Click "Share" button (top right)</p>
+                        <p>3. Click "Change to anyone with the link"</p>
+                        <p>4. Set permission to "Viewer"</p>
+                        <p>5. Copy and paste the URL here</p>
+                      </div>
+                    </details>
+                  </div>
                 </div>
               </div>
             </TabsContent>

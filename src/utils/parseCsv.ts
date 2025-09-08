@@ -94,10 +94,13 @@ export const parseFile = (file: File): Promise<ParseResult> => {
 
 export const parseGoogleSheetUrl = async (url: string): Promise<ParseResult> => {
   try {
+    console.log('Parsing Google Sheets URL:', url);
+    
     // Extract sheet ID from various Google Sheets URL formats
     const sheetIdMatch = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
     
     if (!sheetIdMatch) {
+      console.error('Invalid Google Sheets URL format');
       return {
         data: [],
         error: 'Invalid Google Sheets URL. Please make sure you\'re using a valid Google Sheets link.'
@@ -105,31 +108,59 @@ export const parseGoogleSheetUrl = async (url: string): Promise<ParseResult> => 
     }
 
     const sheetId = sheetIdMatch[1];
+    console.log('Extracted Sheet ID:', sheetId);
     
     // Extract gid (sheet tab ID) if present
     const gidMatch = url.match(/[#&]gid=([0-9]+)/);
     const gid = gidMatch ? gidMatch[1] : '0';
+    console.log('Using GID:', gid);
     
     // Create CSV export URL
     const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+    console.log('CSV Export URL:', csvUrl);
     
-    // Fetch the CSV data
-    const response = await fetch(csvUrl);
+    // Fetch the CSV data with proper headers
+    const response = await fetch(csvUrl, {
+      method: 'GET',
+      mode: 'cors',
+      headers: {
+        'Accept': 'text/csv,application/csv,text/plain,*/*'
+      }
+    });
+    
+    console.log('Response status:', response.status);
+    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
     
     if (!response.ok) {
+      console.error('Response not OK:', response.status, response.statusText);
       if (response.status === 403) {
         return {
           data: [],
           error: 'Access denied. Please make sure the Google Sheet is publicly accessible or shared with "Anyone with the link".'
         };
       }
+      if (response.status === 404) {
+        return {
+          data: [],
+          error: 'Google Sheet not found. Please check the URL and make sure the sheet exists.'
+        };
+      }
       return {
         data: [],
-        error: `Failed to fetch Google Sheet data: ${response.statusText}`
+        error: `Failed to fetch Google Sheet data: ${response.status} ${response.statusText}`
       };
     }
     
     const csvText = await response.text();
+    console.log('CSV content length:', csvText.length);
+    console.log('First 200 chars of CSV:', csvText.substring(0, 200));
+    
+    if (!csvText || csvText.trim().length === 0) {
+      return {
+        data: [],
+        error: 'Google Sheet appears to be empty or inaccessible.'
+      };
+    }
     
     // Parse CSV using Papa Parse
     return new Promise((resolve) => {
@@ -137,16 +168,20 @@ export const parseGoogleSheetUrl = async (url: string): Promise<ParseResult> => 
         header: true,
         skipEmptyLines: true,
         complete: (result) => {
+          console.log('Papa Parse result:', result);
           if (result.errors.length > 0) {
+            console.error('Papa Parse errors:', result.errors);
             resolve({
               data: [],
               error: `Google Sheets parsing error: ${result.errors[0].message}`
             });
           } else {
+            console.log('Successfully parsed', result.data.length, 'records');
             resolve({ data: result.data as Record<string, any>[] });
           }
         },
         error: (error) => {
+          console.error('Papa Parse error:', error);
           resolve({
             data: [],
             error: `Failed to parse Google Sheets data: ${error.message}`
@@ -156,6 +191,7 @@ export const parseGoogleSheetUrl = async (url: string): Promise<ParseResult> => 
     });
     
   } catch (error) {
+    console.error('Google Sheets import error:', error);
     return {
       data: [],
       error: `Failed to import Google Sheet: ${error instanceof Error ? error.message : 'Unknown error'}`
