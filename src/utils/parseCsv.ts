@@ -94,13 +94,22 @@ export const parseFile = (file: File): Promise<ParseResult> => {
 
 export const parseGoogleSheetUrl = async (url: string): Promise<ParseResult> => {
   try {
-    console.log('Parsing Google Sheets URL:', url);
+    console.log('🚀 Starting Google Sheets import for URL:', url);
+    
+    // Validate URL format
+    if (!url.includes('docs.google.com/spreadsheets')) {
+      console.error('❌ URL validation failed - not a Google Sheets URL');
+      return {
+        data: [],
+        error: 'Please provide a valid Google Sheets URL'
+      };
+    }
     
     // Extract sheet ID from various Google Sheets URL formats
     const sheetIdMatch = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
     
     if (!sheetIdMatch) {
-      console.error('Invalid Google Sheets URL format');
+      console.error('❌ Failed to extract sheet ID from URL');
       return {
         data: [],
         error: 'Invalid Google Sheets URL. Please make sure you\'re using a valid Google Sheets link.'
@@ -108,155 +117,113 @@ export const parseGoogleSheetUrl = async (url: string): Promise<ParseResult> => 
     }
 
     const sheetId = sheetIdMatch[1];
-    console.log('Extracted Sheet ID:', sheetId);
+    console.log('✅ Extracted Sheet ID:', sheetId);
     
     // Extract gid (sheet tab ID) if present
     const gidMatch = url.match(/[#&]gid=([0-9]+)/);
     const gid = gidMatch ? gidMatch[1] : '0';
-    console.log('Using GID:', gid);
+    console.log('✅ Using GID:', gid);
     
-    // Create CSV export URL
-    const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
-    console.log('CSV Export URL:', csvUrl);
+    // Try multiple URL formats for better compatibility
+    const csvUrls = [
+      `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`,
+      `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}`,
+      `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`
+    ];
     
-    // Fetch the CSV data with proper headers
-    const response = await fetch(csvUrl, {
-      method: 'GET',
-      mode: 'cors',
-      headers: {
-        'Accept': 'text/csv,application/csv,text/plain,*/*'
-      }
-    });
+    let lastError = '';
     
-    console.log('Response status:', response.status);
-    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-    
-    if (!response.ok) {
-      console.error('Response not OK:', response.status, response.statusText);
+    for (let i = 0; i < csvUrls.length; i++) {
+      const csvUrl = csvUrls[i];
+      console.log(`🔄 Attempt ${i + 1}/${csvUrls.length} - Trying URL:`, csvUrl);
       
-      // Try alternative URL format for 400 errors
-      if (response.status === 400) {
-        console.log('Trying alternative URL format...');
-        const altCsvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}`;
-        console.log('Alternative CSV URL:', altCsvUrl);
-        
-        try {
-          const altResponse = await fetch(altCsvUrl, {
-            method: 'GET',
-            mode: 'cors',
-            headers: {
-              'Accept': 'text/csv,application/csv,text/plain,*/*'
-            }
-          });
-          
-          if (altResponse.ok) {
-            const altCsvText = await altResponse.text();
-            console.log('Alternative URL worked, CSV length:', altCsvText.length);
-            
-            if (altCsvText && altCsvText.trim().length > 0) {
-              // Parse CSV using Papa Parse
-              return new Promise((resolve) => {
-                Papa.parse(altCsvText, {
-                  header: true,
-                  skipEmptyLines: true,
-                  complete: (result) => {
-                    console.log('Google Sheets import successful:', result.data.length, 'records');
-                    resolve({ data: result.data, error: null });
-                  },
-                  error: (error) => {
-                    console.error('CSV parsing error:', error);
-                    resolve({ 
-                      data: [], 
-                      error: `Failed to parse CSV data: ${error.message}` 
-                    });
-                  }
-                });
-              });
-            }
+      try {
+        const response = await fetch(csvUrl, {
+          method: 'GET',
+          mode: 'cors',
+          headers: {
+            'Accept': 'text/csv,application/csv,text/plain,*/*'
           }
-        } catch (altError) {
-          console.warn('Alternative URL also failed:', altError);
-        }
-      }
-      
-      if (response.status === 403) {
-        return {
-          data: [],
-          error: `Access denied. Please make sure the Google Sheet is shared properly:
-
-1. Open your Google Sheet
-2. Click "Share" button (top right)
-3. Change "Restricted" to "Anyone with the link"
-4. Make sure permission is set to "Viewer"
-5. Copy the new link and try again`
-        };
-      }
-      if (response.status === 404) {
-        return {
-          data: [],
-          error: 'Google Sheet not found. Please check the URL and make sure the sheet exists.'
-        };
-      }
-      if (response.status === 400) {
-        return {
-          data: [],
-          error: `Bad request (400). This usually means the sheet isn't properly shared. Please:
-
-1. Make sure the sheet is shared as "Anyone with the link can view"
-2. Check that the URL is complete and correct
-3. Try sharing the sheet again and copying a fresh link`
-        };
-      }
-      return {
-        data: [],
-        error: `Failed to fetch Google Sheet data: ${response.status} ${response.statusText}`
-      };
-    }
-    
-    const csvText = await response.text();
-    console.log('CSV content length:', csvText.length);
-    console.log('First 200 chars of CSV:', csvText.substring(0, 200));
-    
-    if (!csvText || csvText.trim().length === 0) {
-      return {
-        data: [],
-        error: 'Google Sheet appears to be empty or inaccessible.'
-      };
-    }
-    
-    // Parse CSV using Papa Parse
-    return new Promise((resolve) => {
-      Papa.parse(csvText, {
-        header: true,
-        skipEmptyLines: true,
-        complete: (result) => {
-          console.log('Papa Parse result:', result);
-          if (result.errors.length > 0) {
-            console.error('Papa Parse errors:', result.errors);
-            resolve({
-              data: [],
-              error: `Google Sheets parsing error: ${result.errors[0].message}`
+        });
+        
+        console.log(`📊 Response status: ${response.status} (${response.statusText})`);
+        console.log(`📊 Response type:`, response.type);
+        
+        if (response.ok) {
+          const csvText = await response.text();
+          console.log(`✅ Received CSV data, length: ${csvText.length} characters`);
+          console.log(`📝 First 100 chars:`, csvText.substring(0, 100));
+          
+          if (csvText && csvText.trim().length > 0) {
+            // Parse CSV using Papa Parse
+            return new Promise((resolve) => {
+              Papa.parse(csvText, {
+                header: true,
+                skipEmptyLines: true,
+                complete: (result) => {
+                  console.log('🎉 CSV parsing complete');
+                  console.log(`📊 Parsed ${result.data.length} records`);
+                  
+                  if (result.errors.length > 0) {
+                    console.warn('⚠️ Parse warnings:', result.errors);
+                  }
+                  
+                  resolve({ data: result.data as Record<string, any>[] });
+                },
+                error: (error) => {
+                  console.error('❌ Papa Parse error:', error);
+                  resolve({
+                    data: [],
+                    error: `CSV parsing failed: ${error.message}`
+                  });
+                }
+              });
             });
           } else {
-            console.log('Successfully parsed', result.data.length, 'records');
-            resolve({ data: result.data as Record<string, any>[] });
+            console.error('❌ Empty CSV response received');
+            lastError = 'Empty response from Google Sheets';
           }
-        },
-        error: (error) => {
-          console.error('Papa Parse error:', error);
-          resolve({
-            data: [],
-            error: `Failed to parse Google Sheets data: ${error.message}`
-          });
+        } else {
+          console.error(`❌ HTTP ${response.status}: ${response.statusText}`);
+          
+          // Try to read error response
+          try {
+            const errorText = await response.text();
+            console.error('❌ Error response body:', errorText.substring(0, 200));
+            lastError = `HTTP ${response.status}: ${response.statusText}`;
+          } catch (e) {
+            console.error('❌ Could not read error response');
+            lastError = `HTTP ${response.status}: ${response.statusText}`;
+          }
         }
-      });
-    });
+        
+      } catch (fetchError) {
+        console.error(`❌ Fetch error for attempt ${i + 1}:`, fetchError);
+        lastError = fetchError instanceof Error ? fetchError.message : 'Network error';
+      }
+    }
     
-  } catch (error) {
-    console.error('Google Sheets import error:', error);
+    // All attempts failed
+    console.error('❌ All import attempts failed');
     return {
       data: [],
-      error: `Failed to import Google Sheet: ${error instanceof Error ? error.message : 'Unknown error'}`
+      error: `Google Sheets import failed: ${lastError}
+
+Make sure your sheet is properly shared:
+1. Open your Google Sheet
+2. Click "Share" (top right corner)  
+3. Change from "Restricted" to "Anyone with the link"
+4. Set permission to "Viewer"
+5. Copy the sharing link and try again
+
+Current error: ${lastError}`
+    };
+    
+  } catch (error) {
+    console.error('❌ Unexpected error during Google Sheets import:', error);
+    return {
+      data: [],
+      error: `Import failed: ${error instanceof Error ? error.message : 'Unknown error occurred'}`
     };
   }
 };
