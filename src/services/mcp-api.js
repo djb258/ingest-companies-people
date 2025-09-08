@@ -54,7 +54,7 @@ mcpApiClient.interceptors.response.use(
 // MCP Health check
 export const checkMCPHealth = async () => {
   try {
-    const response = await mcpApiClient.get('/mcp/health');
+    const response = await mcpApiClient.get('/api/health');
     return {
       success: true,
       data: response.data,
@@ -85,7 +85,7 @@ export const mcpDirectInsert = async (records, targetTable = 'marketing.company_
       batchId: requestData.batch_id
     });
     
-    const response = await mcpApiClient.post('/mcp/insert', requestData);
+    const response = await mcpApiClient.post('/insert', requestData);
     
     return {
       success: true,
@@ -145,10 +145,10 @@ export const mcpBulkCompanyInsert = async (companies, batchSize = 100) => {
 // Get table information via MCP
 export const getMCPTableInfo = async () => {
   try {
-    const response = await mcpApiClient.get('/mcp/table-info');
+    const response = await mcpApiClient.get('/api/health');
     return {
       success: true,
-      tableInfo: response.data.table_info,
+      tableInfo: response.data,
       connectionType: 'MCP_DIRECT'
     };
   } catch (error) {
