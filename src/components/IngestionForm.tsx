@@ -27,6 +27,14 @@ export const IngestionForm: React.FC<IngestionFormProps> = ({ records, tableType
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('🚀 Form submission started with:', {
+      recordsLength: records.length,
+      sampleRecord: records[0],
+      targetTable: targetTable.trim() || 'marketing db.intake.company_raw_intake',
+      endpoint,
+      useMCP
+    });
+    
     if (records.length === 0) {
       toast({
         variant: "destructive",
@@ -61,6 +69,8 @@ export const IngestionForm: React.FC<IngestionFormProps> = ({ records, tableType
         result = await postMarketingCompanies(records, targetTable.trim() || 'marketing db.intake.company_raw_intake');
       }
       setUploadResult(result);
+      
+      console.log('📊 Upload result received:', result);
       
       if (result.success) {
         toast({

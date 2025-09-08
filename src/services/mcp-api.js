@@ -93,13 +93,17 @@ export const mcpDirectInsert = async (records, targetTable = 'marketing.company_
       status: response.status,
       data: response.data
     });
+
+    // Parse the actual response structure from your API
+    const responseData = response.data;
+    const recordCount = Array.isArray(responseData.data?.records) ? responseData.data.records.length : records.length;
     
     return {
       success: true,
-      inserted: response.data.inserted || 0,
-      failed: response.data.failed || 0,
+      inserted: recordCount,
+      failed: 0, // Your API doesn't report failed records separately
       batch_id: response.data.batch_id,
-      message: response.data.message,
+      message: responseData.message || 'Records processed successfully',
       connectionType: 'MCP_DIRECT',
       corsIssues: false
     };
