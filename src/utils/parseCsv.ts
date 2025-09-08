@@ -91,3 +91,74 @@ export const parseFile = (file: File): Promise<ParseResult> => {
     }
   });
 };
+
+export const parseGoogleSheetUrl = async (url: string): Promise<ParseResult> => {
+  try {
+    // Extract sheet ID from various Google Sheets URL formats
+    const sheetIdMatch = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+    
+    if (!sheetIdMatch) {
+      return {
+        data: [],
+        error: 'Invalid Google Sheets URL. Please make sure you\'re using a valid Google Sheets link.'
+      };
+    }
+
+    const sheetId = sheetIdMatch[1];
+    
+    // Extract gid (sheet tab ID) if present
+    const gidMatch = url.match(/[#&]gid=([0-9]+)/);
+    const gid = gidMatch ? gidMatch[1] : '0';
+    
+    // Create CSV export URL
+    const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+    
+    // Fetch the CSV data
+    const response = await fetch(csvUrl);
+    
+    if (!response.ok) {
+      if (response.status === 403) {
+        return {
+          data: [],
+          error: 'Access denied. Please make sure the Google Sheet is publicly accessible or shared with "Anyone with the link".'
+        };
+      }
+      return {
+        data: [],
+        error: `Failed to fetch Google Sheet data: ${response.statusText}`
+      };
+    }
+    
+    const csvText = await response.text();
+    
+    // Parse CSV using Papa Parse
+    return new Promise((resolve) => {
+      Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (result) => {
+          if (result.errors.length > 0) {
+            resolve({
+              data: [],
+              error: `Google Sheets parsing error: ${result.errors[0].message}`
+            });
+          } else {
+            resolve({ data: result.data as Record<string, any>[] });
+          }
+        },
+        error: (error) => {
+          resolve({
+            data: [],
+            error: `Failed to parse Google Sheets data: ${error.message}`
+          });
+        }
+      });
+    });
+    
+  } catch (error) {
+    return {
+      data: [],
+      error: `Failed to import Google Sheet: ${error instanceof Error ? error.message : 'Unknown error'}`
+    };
+  }
+};

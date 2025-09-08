@@ -1,9 +1,11 @@
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, File, X, CheckCircle } from 'lucide-react';
+import { Upload, File, X, CheckCircle, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { parseFile, ParseResult } from '@/utils/parseCsv';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { parseFile, parseGoogleSheetUrl, ParseResult } from '@/utils/parseCsv';
 import { useToast } from '@/hooks/use-toast';
 
 interface FileDropProps {
@@ -13,6 +15,8 @@ interface FileDropProps {
 export const FileDrop: React.FC<FileDropProps> = ({ onDataParsed }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [googleSheetUrl, setGoogleSheetUrl] = useState('');
+  const [importedSheetName, setImportedSheetName] = useState<string | null>(null);
   const { toast } = useToast();
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
@@ -62,8 +66,51 @@ export const FileDrop: React.FC<FileDropProps> = ({ onDataParsed }) => {
     multiple: false
   });
 
+  const handleGoogleSheetImport = async () => {
+    if (!googleSheetUrl.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter a Google Sheets URL",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const result: ParseResult = await parseGoogleSheetUrl(googleSheetUrl);
+      
+      if (result.error) {
+        toast({
+          variant: "destructive",
+          title: "Import Error",
+          description: result.error,
+        });
+      } else {
+        const sheetName = googleSheetUrl.match(/spreadsheets\/d\/([a-zA-Z0-9-_]+)/)?.[1] || 'Google Sheet';
+        setImportedSheetName(sheetName);
+        toast({
+          title: "Google Sheet Imported Successfully",
+          description: `Loaded ${result.data.length} records from Google Sheets`,
+        });
+        onDataParsed(result.data);
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Import Error",
+        description: error instanceof Error ? error.message : "Failed to import Google Sheet",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const clearFile = () => {
     setUploadedFile(null);
+    setImportedSheetName(null);
+    setGoogleSheetUrl('');
     onDataParsed([]);
   };
 
@@ -71,8 +118,8 @@ export const FileDrop: React.FC<FileDropProps> = ({ onDataParsed }) => {
     <Card className="p-6">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-foreground">Upload Data File</h2>
-          {uploadedFile && (
+          <h2 className="text-xl font-semibold text-foreground">Import Data</h2>
+          {(uploadedFile || importedSheetName) && (
             <Button
               variant="ghost"
               size="sm"
@@ -84,7 +131,14 @@ export const FileDrop: React.FC<FileDropProps> = ({ onDataParsed }) => {
           )}
         </div>
 
-        {!uploadedFile ? (
+        {!uploadedFile && !importedSheetName ? (
+          <Tabs defaultValue="file" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="file">Upload File</TabsTrigger>
+              <TabsTrigger value="sheets">Google Sheets</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="file" className="mt-4">
           <div
             {...getRootProps()}
             className={`
@@ -118,16 +172,68 @@ export const FileDrop: React.FC<FileDropProps> = ({ onDataParsed }) => {
               )}
             </div>
           </div>
+            </TabsContent>
+            
+            <TabsContent value="sheets" className="mt-4">
+              <div className="space-y-4">
+                <div className="flex flex-col space-y-2">
+                  <div className="flex space-x-2">
+                    <Input
+                      placeholder="Paste your Google Sheets share URL here..."
+                      value={googleSheetUrl}
+                      onChange={(e) => setGoogleSheetUrl(e.target.value)}
+                      className="flex-1"
+                      disabled={isUploading}
+                    />
+                    <Button
+                      onClick={handleGoogleSheetImport}
+                      disabled={isUploading || !googleSheetUrl.trim()}
+                      className="shrink-0"
+                    >
+                      {isUploading ? (
+                        <div className="flex items-center space-x-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                          <span>Importing...</span>
+                        </div>
+                      ) : (
+                        <>
+                          <Link2 className="h-4 w-4 mr-2" />
+                          Import
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Make sure your Google Sheet is publicly viewable or shared with "Anyone with the link"
+                  </p>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         ) : (
           <div className="flex items-center space-x-3 p-4 bg-success/10 border border-success/20 rounded-lg">
             <CheckCircle className="h-5 w-5 text-success" />
-            <File className="h-5 w-5 text-muted-foreground" />
-            <div className="flex-1">
-              <p className="font-medium text-foreground">{uploadedFile.name}</p>
-              <p className="text-sm text-muted-foreground">
-                {(uploadedFile.size / 1024).toFixed(1)} KB
-              </p>
-            </div>
+            {uploadedFile ? (
+              <>
+                <File className="h-5 w-5 text-muted-foreground" />
+                <div className="flex-1">
+                  <p className="font-medium text-foreground">{uploadedFile.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {(uploadedFile.size / 1024).toFixed(1)} KB
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <Link2 className="h-5 w-5 text-muted-foreground" />
+                <div className="flex-1">
+                  <p className="font-medium text-foreground">Google Sheets Import</p>
+                  <p className="text-sm text-muted-foreground">
+                    Data imported successfully
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
