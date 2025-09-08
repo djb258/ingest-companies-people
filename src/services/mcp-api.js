@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // MCP API base URL - uses MCP endpoints that bypass CORS
-const MCP_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const MCP_BASE_URL = import.meta.env.VITE_API_URL || 'https://render-marketing-db.onrender.com';
 
 // Create axios instance optimized for MCP communication
 const mcpApiClient = axios.create({
