@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Render API base URL - no API key required (handled server-side)
-const BASE_URL = 'https://render-marketing-db.onrender.com';
+// Local API base URL - connects to your Barton Outreach Core API
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 // Create axios instance with CORS-safe configuration for Render
 const apiClient = axios.create({

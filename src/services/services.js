@@ -88,7 +88,7 @@ export const createCompany = async (companyData) => {
 };
 
 // Bulk upload to marketing companies endpoint with proper structure
-export const postMarketingCompanies = async (records, targetTable = 'company.marketing_company') => {
+export const postMarketingCompanies = async (records, targetTable = 'marketing.company_raw_intake') => {
   try {
     const requestData = {
       records: records,
