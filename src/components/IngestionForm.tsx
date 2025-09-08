@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Send, AlertCircle, CheckCircle } from 'lucide-react';
 import { postMarketingCompanies } from '@/services/services';
+import { mcpDirectInsert, checkMCPHealth } from '@/services/mcp-api';
 import { useToast } from '@/hooks/use-toast';
 
 interface IngestionFormProps {
@@ -20,6 +21,7 @@ export const IngestionForm: React.FC<IngestionFormProps> = ({ records, tableType
   );
   const [isUploading, setIsUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<any | null>(null);
+  const [useMCP, setUseMCP] = useState(true); // Use MCP by default to avoid CORS
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,7 +49,17 @@ export const IngestionForm: React.FC<IngestionFormProps> = ({ records, tableType
     setUploadResult(null);
 
     try {
-      const result = await postMarketingCompanies(records, targetTable.trim() || 'marketing.company_raw_intake');
+      let result;
+      
+      if (useMCP) {
+        // Use MCP direct insertion to bypass CORS
+        console.log('🔌 Using MCP Direct Insert (no CORS issues)');
+        result = await mcpDirectInsert(records, targetTable.trim() || 'marketing.company_raw_intake');
+      } else {
+        // Use traditional API call
+        console.log('📡 Using Traditional API Call');
+        result = await postMarketingCompanies(records, targetTable.trim() || 'marketing.company_raw_intake');
+      }
       setUploadResult(result);
       
       if (result.success) {
@@ -106,6 +118,31 @@ export const IngestionForm: React.FC<IngestionFormProps> = ({ records, tableType
               onChange={(e) => setTargetTable(e.target.value)}
               placeholder="Leave blank to use default table"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Connection Method</Label>
+            <div className="flex items-center space-x-4">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  checked={useMCP}
+                  onChange={() => setUseMCP(true)}
+                  className="text-primary"
+                />
+                <span className="text-sm">MCP Direct (No CORS issues)</span>
+                <Badge variant="default" className="text-xs">Recommended</Badge>
+              </label>
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  checked={!useMCP}
+                  onChange={() => setUseMCP(false)}
+                  className="text-primary"
+                />
+                <span className="text-sm">Traditional API</span>
+              </label>
+            </div>
           </div>
 
           <Button
