@@ -87,7 +87,7 @@ export const mcpDirectInsert = async (records, targetTable = 'marketing.company_
       sampleRecord: records[0] ? JSON.stringify(records[0], null, 2) : 'No records'
     });
     
-    const response = await mcpApiClient.post('/insert', requestData);
+    const response = await mcpApiClient.post('/api/insert', requestData);  // Try /api/insert instead
     
     console.log('🔌 MCP Response received - FULL DEBUG:', {
       status: response.status,
