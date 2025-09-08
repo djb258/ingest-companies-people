@@ -83,10 +83,16 @@ export const mcpDirectInsert = async (records, targetTable = 'marketing.company_
     console.log('🔌 MCP Direct Insert:', {
       recordCount: records.length,
       targetTable,
-      batchId: requestData.batch_id
+      batchId: requestData.batch_id,
+      sampleRecord: records[0] ? JSON.stringify(records[0], null, 2) : 'No records'
     });
     
     const response = await mcpApiClient.post('/insert', requestData);
+    
+    console.log('🔌 MCP Response received:', {
+      status: response.status,
+      data: response.data
+    });
     
     return {
       success: true,

@@ -17,7 +17,7 @@ interface IngestionFormProps {
 export const IngestionForm: React.FC<IngestionFormProps> = ({ records, tableType }) => {
   const [endpoint, setEndpoint] = useState('http://localhost:3000');
   const [targetTable, setTargetTable] = useState(
-    tableType === 'companies' ? 'marketing.company_raw_intake' : ''
+    tableType === 'companies' ? 'company.marketing_company' : ''
   );
   const [isUploading, setIsUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<any | null>(null);
@@ -54,11 +54,11 @@ export const IngestionForm: React.FC<IngestionFormProps> = ({ records, tableType
       if (useMCP) {
         // Use MCP direct insertion to bypass CORS
         console.log('🔌 Using MCP Direct Insert (no CORS issues)');
-        result = await mcpDirectInsert(records, targetTable.trim() || 'marketing.company_raw_intake');
+        result = await mcpDirectInsert(records, targetTable.trim() || 'company.marketing_company');
       } else {
         // Use traditional API call
         console.log('📡 Using Traditional API Call');
-        result = await postMarketingCompanies(records, targetTable.trim() || 'marketing.company_raw_intake');
+        result = await postMarketingCompanies(records, targetTable.trim() || 'company.marketing_company');
       }
       setUploadResult(result);
       
