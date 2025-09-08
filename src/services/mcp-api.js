@@ -89,10 +89,17 @@ export const mcpDirectInsert = async (records, targetTable = 'marketing.company_
     
     const response = await mcpApiClient.post('/insert', requestData);
     
-    console.log('🔌 MCP Response received:', {
+    console.log('🔌 MCP Response received - FULL DEBUG:', {
       status: response.status,
-      data: response.data,
-      fullResponse: JSON.stringify(response.data, null, 2)
+      statusText: response.statusText,
+      headers: response.headers,
+      fullResponseData: JSON.stringify(response.data, null, 2),
+      dataKeys: Object.keys(response.data || {}),
+      requestPayload: {
+        recordCount: records.length,
+        targetTable,
+        sampleRecord: records[0]
+      }
     });
 
     // Parse the actual response structure from your API
