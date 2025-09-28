@@ -129,16 +129,16 @@ const Documentation = () => {
                 <h4>Expected Data Formats</h4>
                 <h5>Company Data</h5>
                 <pre className="bg-muted p-2 rounded text-xs">
-company_name,domain,industry,employee_count,location
+{`company_name,domain,industry,employee_count,location
 "Tech Corp","techcorp.com","Technology",150,"San Francisco"
-"Marketing Inc","marketing.com","Marketing",50,"New York"
+"Marketing Inc","marketing.com","Marketing",50,"New York"`}
                 </pre>
 
                 <h5>People Data</h5>
                 <pre className="bg-muted p-2 rounded text-xs">
-first_name,last_name,email,company,title
+{`first_name,last_name,email,company,title
 "John","Doe","john@techcorp.com","Tech Corp","Engineer"
-"Jane","Smith","jane@marketing.com","Marketing Inc","Manager"
+"Jane","Smith","jane@marketing.com","Marketing Inc","Manager"`}
                 </pre>
               </div>
             </CardContent>
@@ -231,23 +231,23 @@ first_name,last_name,email,company,title
 
                 <h4>Example Usage</h4>
                 <pre className="bg-muted p-2 rounded text-xs">
-# Insert data
-curl -X POST https://render-marketing-db.onrender.com/insert \
-  -H "Content-Type: application/json" \
+{`# Insert data
+curl -X POST https://render-marketing-db.onrender.com/insert \\
+  -H "Content-Type: application/json" \\
   -d '{
     "records": [{"field1": "value1"}],
     "target_table": "company.marketing_company"
   }'
 
 # HEIR check
-curl -X POST http://localhost:7001/heir/check \
-  -H "Content-Type: application/json" \
+curl -X POST http://localhost:7001/heir/check \\
+  -H "Content-Type: application/json" \\
   -d '{
     "ssot": {
       "meta": {"app_name": "imo-creator"},
       "doctrine": {"schema_version": "HEIR/1.0"}
     }
-  }'
+  }'`}
                 </pre>
               </div>
             </CardContent>
