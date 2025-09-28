@@ -1,0 +1,130 @@
+import React, { useState } from 'react';
+import { FileDrop } from '@/components/FileDrop';
+import { RecordPreviewTable } from '@/components/RecordPreviewTable';
+import { IngestionForm } from '@/components/IngestionForm';
+import { ApiTester } from '@/components/ApiTester';
+import ApiConnectionStatus from '@/components/ApiConnectionStatus';
+import EnhancedApiTester from '@/components/EnhancedApiTester';
+import { McpTester } from '@/components/McpTester';
+import CorsStatus from '@/components/CorsStatus';
+import { Upload, Send, Building, Users, Database } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+
+type TableType = 'companies' | 'people';
+
+const DataIngestion = () => {
+  const [records, setRecords] = useState<Record<string, any>[]>([]);
+  const [selectedTableType, setSelectedTableType] = useState<TableType>('companies');
+
+  const handleDataParsed = (data: Record<string, any>[]) => {
+    setRecords(data);
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold text-foreground">Data Ingestion</h1>
+        <p className="text-muted-foreground">Upload, preview, and send data to your Render API endpoint</p>
+        <div className="flex items-center space-x-4 pt-2">
+          <CorsStatus />
+        </div>
+      </div>
+
+      {/* Table Type Selection */}
+      <div className="bg-card rounded-lg border p-6">
+        <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-primary/10 rounded-full">
+              <Database className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-medium text-foreground">Select Data Type</h3>
+              <p className="text-sm text-muted-foreground">Choose the type of data you're uploading</p>
+            </div>
+          </div>
+
+          <RadioGroup
+            value={selectedTableType}
+            onValueChange={(value: TableType) => setSelectedTableType(value)}
+            className="flex space-x-6"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="companies" id="companies" />
+              <Label htmlFor="companies" className="flex items-center space-x-2 cursor-pointer">
+                <Building className="h-4 w-4" />
+                <span>Companies</span>
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="people" id="people" />
+              <Label htmlFor="people" className="flex items-center space-x-2 cursor-pointer">
+                <Users className="h-4 w-4" />
+                <span>People</span>
+              </Label>
+            </div>
+          </RadioGroup>
+        </div>
+      </div>
+
+      {/* Process Steps */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="flex items-center space-x-3 p-4 bg-card rounded-lg border">
+          <div className="p-2 bg-primary/10 rounded-full">
+            <Upload className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h3 className="font-medium text-foreground">1. Upload File</h3>
+            <p className="text-sm text-muted-foreground">CSV, JSON, or Excel</p>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-3 p-4 bg-card rounded-lg border">
+          <div className="p-2 bg-info/10 rounded-full">
+            <Database className="h-5 w-5 text-info" />
+          </div>
+          <div>
+            <h3 className="font-medium text-foreground">2. Preview Data</h3>
+            <p className="text-sm text-muted-foreground">Verify records</p>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-3 p-4 bg-card rounded-lg border">
+          <div className="p-2 bg-success/10 rounded-full">
+            <Send className="h-5 w-5 text-success" />
+          </div>
+          <div>
+            <h3 className="font-medium text-foreground">3. Send to API</h3>
+            <p className="text-sm text-muted-foreground">Ingest to database</p>
+          </div>
+        </div>
+      </div>
+
+      {/* File Upload */}
+      <FileDrop onDataParsed={handleDataParsed} />
+
+      {/* Data Preview */}
+      {records.length > 0 && (
+        <RecordPreviewTable records={records} />
+      )}
+
+      {/* Ingestion Form */}
+      <IngestionForm records={records} tableType={selectedTableType} />
+
+      {/* API Connection & Testing Section */}
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ApiConnectionStatus />
+          <McpTester />
+        </div>
+        <div className="grid grid-cols-1 gap-6">
+          <EnhancedApiTester />
+          <ApiTester />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DataIngestion;
