@@ -1,0 +1,337 @@
+name: "Draw.io + GitIngest Integration"
+
+on:
+  push:
+    branches: [main, gitingest-drawio]
+    paths:
+      - 'src/**'
+      - 'api/**'
+      - 'tools/**'
+      - 'packages/**'
+      - '*.md'
+      - '*.json'
+      - '*.yml'
+      - '*.yaml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      diagram_types:
+        description: 'Comma-separated list of diagram types to generate'
+        required: false
+        default: 'all'
+      force_regenerate:
+        description: 'Force regeneration of all diagrams'
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  generate-diagrams:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        npm install
+        pip install gitingest pyyaml
+
+    - name: Install GitIngest
+      run: |
+        pip install git+https://github.com/cyclotruc/gitingest.git
+
+    - name: Generate GitIngest analysis
+      run: |
+        mkdir -p analysis
+        gitingest . \
+          --output analysis/repository-analysis.txt \
+          --include-pattern "*.py" \
+          --include-pattern "*.js" \
+          --include-pattern "*.ts" \
+          --include-pattern "*.tsx" \
+          --include-pattern "*.md" \
+          --include-pattern "*.yml" \
+          --include-pattern "*.yaml" \
+          --include-pattern "*.json" \
+          --exclude-pattern "node_modules/*" \
+          --exclude-pattern "*.log" \
+          --exclude-pattern ".env*" \
+          --exclude-pattern "dist/*" \
+          --exclude-pattern "build/*" \
+          --max-file-size 1048576
+
+    - name: Create diagram generation script
+      run: |
+        cat > generate_diagrams.py << 'EOF'
+        #!/usr/bin/env python3
+        import json
+        import os
+        import yaml
+        from datetime import datetime
+
+        def load_config():
+            """Load diagram configuration"""
+            with open('diagrams/config.json', 'r') as f:
+                return json.load(f)
+
+        def read_analysis():
+            """Read GitIngest analysis"""
+            with open('analysis/repository-analysis.txt', 'r') as f:
+                return f.read()
+
+        def generate_metadata():
+            """Generate diagram metadata"""
+            config = load_config()
+            analysis = read_analysis()
+
+            metadata = {
+                "generation_time": datetime.now().isoformat(),
+                "analysis_size": len(analysis),
+                "config_version": config.get("drawio_integration", {}).get("version", "1.0.0"),
+                "diagrams_generated": [],
+                "repository_stats": {
+                    "total_lines": analysis.count('\n'),
+                    "file_count": analysis.count('File:'),
+                    "has_src": 'src/' in analysis,
+                    "has_api": 'api/' in analysis,
+                    "has_tools": 'tools/' in analysis
+                }
+            }
+
+            return metadata
+
+        def create_architecture_diagram():
+            """Create updated architecture overview diagram"""
+            config = load_config()
+            analysis = read_analysis()
+
+            # Enhanced template with dynamic content based on analysis
+            has_react = 'React' in analysis or '.tsx' in analysis
+            has_python = '.py' in analysis
+            has_api = 'api/' in analysis
+            has_mcp = 'mcp' in analysis.lower()
+
+            template = f'''<?xml version="1.0" encoding="UTF-8"?>
+        <mxfile host="app.diagrams.net" agent="5.0" version="24.7.7">
+          <diagram name="Updated Architecture - {datetime.now().strftime('%Y-%m-%d')}" id="updated-architecture">
+            <mxGraphModel dx="1422" dy="786" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+              <root>
+                <mxCell id="0" />
+                <mxCell id="1" parent="0" />
+
+                <!-- Dynamic Title based on analysis -->
+                <mxCell id="title" value="Generated Architecture Overview - {datetime.now().strftime('%B %d, %Y')}&#xa;Analysis: {analysis.count('File:')} files, {analysis.count(chr(10))} lines" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1" vertex="1" parent="1">
+                  <mxGeometry x="284" y="30" width="600" height="50" as="geometry" />
+                </mxCell>
+
+                <!-- Frontend Layer (conditional) -->
+                {"<!-- React Frontend Detected -->" if has_react else "<!-- No React Frontend Detected -->"}
+                <mxCell id="frontend" value="React Frontend{'&#xa;TypeScript + Vite' if has_react else ' (Not Detected)'}" style="rounded=1;whiteSpace=wrap;html=1;fillColor={'#dae8fc' if has_react else '#f8f8f8'};strokeColor={'#6c8ebf' if has_react else '#999999'};fontSize=12;fontStyle=1" vertex="1" parent="1">
+                  <mxGeometry x="200" y="120" width="200" height="60" as="geometry" />
+                </mxCell>
+
+                <!-- API Layer (conditional) -->
+                {"<!-- API Layer Detected -->" if has_api else "<!-- No API Layer Detected -->"}
+                <mxCell id="api" value="API Services{'&#xa;FastAPI + MCP' if has_python and has_api else ' (Not Detected)'}" style="rounded=1;whiteSpace=wrap;html=1;fillColor={'#fff2cc' if has_api else '#f8f8f8'};strokeColor={'#d6b656' if has_api else '#999999'};fontSize=12;fontStyle=1" vertex="1" parent="1">
+                  <mxGeometry x="480" y="120" width="200" height="60" as="geometry" />
+                </mxCell>
+
+                <!-- Database Layer -->
+                <mxCell id="database" value="Database Layer&#xa;Neon PostgreSQL" style="cylinder;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#ffcd28;strokeColor=#d79b00;fontSize=12;fontStyle=1" vertex="1" parent="1">
+                  <mxGeometry x="750" y="120" width="150" height="80" as="geometry" />
+                </mxCell>
+
+                <!-- MCP Integration (conditional) -->
+                {"<!-- MCP Integration Detected -->" if has_mcp else "<!-- No MCP Integration Detected -->"}
+                <mxCell id="mcp" value="MCP Integration{'&#xa;Composio + Tools' if has_mcp else ' (Not Detected)'}" style="rounded=1;whiteSpace=wrap;html=1;fillColor={'#d5e8d4' if has_mcp else '#f8f8f8'};strokeColor={'#82b366' if has_mcp else '#999999'};fontSize=12;fontStyle=1" vertex="1" parent="1">
+                  <mxGeometry x="340" y="250" width="200" height="60" as="geometry" />
+                </mxCell>
+
+                <!-- Analysis Summary -->
+                <mxCell id="analysis-summary" value="Repository Analysis Summary:&#xa;• Files: {analysis.count('File:')}&#xa;• Lines: {analysis.count(chr(10)):,}&#xa;• React: {'Yes' if has_react else 'No'}&#xa;• Python: {'Yes' if has_python else 'No'}&#xa;• API: {'Yes' if has_api else 'No'}&#xa;• MCP: {'Yes' if has_mcp else 'No'}" style="text;html=1;strokeColor=#82b366;fillColor=#d5e8d4;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fontSize=10" vertex="1" parent="1">
+                  <mxGeometry x="50" y="350" width="250" height="150" as="geometry" />
+                </mxCell>
+
+                <!-- Generated Timestamp -->
+                <mxCell id="timestamp" value="Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}" style="text;html=1;strokeColor=none;fillColor=none;align=right;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontColor=#666666" vertex="1" parent="1">
+                  <mxGeometry x="800" y="770" width="300" height="20" as="geometry" />
+                </mxCell>
+
+              </root>
+            </mxGraphModel>
+          </diagram>
+        </mxfile>'''
+
+            os.makedirs('diagrams/generated', exist_ok=True)
+            with open('diagrams/generated/auto-architecture.drawio', 'w') as f:
+                f.write(template)
+
+            return 'auto-architecture.drawio'
+
+        def main():
+            """Main diagram generation function"""
+            print("🎨 Starting diagram generation...")
+
+            metadata = generate_metadata()
+
+            # Generate architecture diagram
+            arch_diagram = create_architecture_diagram()
+            metadata["diagrams_generated"].append(arch_diagram)
+            print(f"✅ Generated: {arch_diagram}")
+
+            # Save metadata
+            with open('diagrams/generated/generation-metadata.json', 'w') as f:
+                json.dump(metadata, f, indent=2)
+
+            print(f"📊 Generated {len(metadata['diagrams_generated'])} diagram(s)")
+            print("✨ Diagram generation complete!")
+
+        if __name__ == "__main__":
+            main()
+        EOF
+        chmod +x generate_diagrams.py
+
+    - name: Generate diagrams
+      run: python generate_diagrams.py
+
+    - name: Export diagrams to PNG (if draw.io CLI available)
+      run: |
+        # Try to install draw.io desktop for exports
+        if command -v drawio &> /dev/null; then
+          echo "🖼️ Exporting diagrams to PNG..."
+          for file in diagrams/generated/*.drawio; do
+            if [ -f "$file" ]; then
+              basename=$(basename "$file" .drawio)
+              drawio -x -f png -o "diagrams/generated/${basename}.png" "$file" || echo "⚠️ Export failed for $file"
+            fi
+          done
+        else
+          echo "ℹ️ Draw.io CLI not available, skipping PNG export"
+        fi
+
+    - name: Commit generated diagrams
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+
+        git add diagrams/generated/
+        git add analysis/
+
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "🎨 Auto-generate draw.io diagrams
+
+        - Generated from GitIngest analysis
+        - Updated architecture diagrams based on codebase
+        - Metadata: $(date -u +%Y-%m-%d\ %H:%M\ UTC)
+
+        🤖 Generated with GitHub Actions"
+
+          git push
+        fi
+
+    - name: Upload diagram artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: generated-diagrams
+        path: |
+          diagrams/generated/
+          analysis/
+        retention-days: 30
+
+    - name: Create diagram summary
+      run: |
+        echo "## 🎨 Generated Diagrams" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Diagram | Type | Generated |" >> $GITHUB_STEP_SUMMARY
+        echo "|---------|------|-----------|" >> $GITHUB_STEP_SUMMARY
+
+        for file in diagrams/generated/*.drawio; do
+          if [ -f "$file" ]; then
+            basename=$(basename "$file")
+            echo "| \`$basename\` | Draw.io | ✅ |" >> $GITHUB_STEP_SUMMARY
+          fi
+        done
+
+        if [ -f "diagrams/generated/generation-metadata.json" ]; then
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Analysis Summary" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+          cat diagrams/generated/generation-metadata.json >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        fi
+
+  validate-diagrams:
+    needs: generate-diagrams
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.ref }}
+
+    - name: Download diagrams
+      uses: actions/download-artifact@v4
+      with:
+        name: generated-diagrams
+        path: ./
+
+    - name: Validate diagram XML
+      run: |
+        echo "🔍 Validating generated diagrams..."
+
+        for file in diagrams/generated/*.drawio; do
+          if [ -f "$file" ]; then
+            echo "Validating: $file"
+            python -c "
+        import xml.etree.ElementTree as ET
+        try:
+            ET.parse('$file')
+            print('✅ Valid XML: $file')
+        except ET.ParseError as e:
+            print('❌ Invalid XML: $file - Error: $e')
+            exit(1)
+        " || exit 1
+          fi
+        done
+
+        echo "✅ All diagrams validated successfully!"
+
+    - name: Check file sizes
+      run: |
+        echo "📏 Checking diagram file sizes..."
+
+        for file in diagrams/generated/*.drawio; do
+          if [ -f "$file" ]; then
+            size=$(stat -c%s "$file")
+            if [ $size -gt 1048576 ]; then  # 1MB limit
+              echo "⚠️ Large file: $file ($size bytes)"
+            else
+              echo "✅ Reasonable size: $file ($size bytes)"
+            fi
+          fi
+        done

@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" agent="5.0 (Windows)" version="24.7.7">
+  <diagram name="Strategic Overview - 40,000 ft" id="strategic-overview">
+    <mxGraphModel dx="1422" dy="786" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="Integrated Data &amp; IMO System&#xa;Strategic Architecture Overview (40,000 ft)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="284" y="30" width="600" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Christmas Tree Trunk - Overall Orchestrator -->
+        <mxCell id="trunk" value="Overall Orchestrator&#xa;(Christmas Tree Trunk)&#xa;30,000 ft" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="480" y="150" width="200" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Main Branches -->
+        <!-- Input Branch -->
+        <mxCell id="input-branch" value="Input Domain&#xa;Data Ingestion &amp; Validation&#xa;20,000 ft" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="200" y="280" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Middle Branch -->
+        <mxCell id="middle-branch" value="Middle Domain&#xa;Processing &amp; Database&#xa;10,000 ft" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="490" y="280" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Output Branch -->
+        <mxCell id="output-branch" value="Output Domain&#xa;Notifications &amp; Reporting&#xa;5,000 ft" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="780" y="280" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Subagents for Input -->
+        <mxCell id="mapper" value="CSV/Excel&#xa;Mapper" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="150" y="400" width="90" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="validator" value="Data&#xa;Validator" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="290" y="400" width="90" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Subagents for Middle -->
+        <mxCell id="database" value="Database&#xa;Manager" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="440" y="400" width="90" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="enforcer" value="Business&#xa;Enforcer" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="580" y="400" width="90" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Subagents for Output -->
+        <mxCell id="notifier" value="API&#xa;Notifier" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="730" y="400" width="90" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="reporter" value="Progress&#xa;Reporter" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="870" y="400" width="90" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Infrastructure Layer -->
+        <mxCell id="infrastructure" value="MCP Infrastructure &amp; Composio Integration&#xa;Ground Level (0 ft)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="350" y="550" width="460" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Connections from Trunk to Branches -->
+        <mxCell id="trunk-to-input" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="trunk" target="input-branch">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="430" y="300" as="sourcePoint" />
+            <mxPoint x="480" y="250" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="trunk-to-middle" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="trunk" target="middle-branch">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="530" y="240" as="sourcePoint" />
+            <mxPoint x="300" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="trunk-to-output" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="trunk" target="output-branch">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="590" y="240" as="sourcePoint" />
+            <mxPoint x="590" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Connections from Branches to Subagents -->
+        <mxCell id="input-to-mapper" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="input-branch" target="mapper">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="540" y="240" as="sourcePoint" />
+            <mxPoint x="300" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="input-to-validator" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="input-branch" target="validator">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="255" y="360" as="sourcePoint" />
+            <mxPoint x="205" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="middle-to-database" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="middle-branch" target="database">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="355" y="360" as="sourcePoint" />
+            <mxPoint x="345" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="middle-to-enforcer" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="middle-branch" target="enforcer">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="545" y="360" as="sourcePoint" />
+            <mxPoint x="495" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="output-to-notifier" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="output-branch" target="notifier">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="635" y="360" as="sourcePoint" />
+            <mxPoint x="635" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="output-to-reporter" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="output-branch" target="reporter">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="835" y="360" as="sourcePoint" />
+            <mxPoint x="785" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend-title" value="Legend:" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="650" width="80" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-trunk" value="30k ft: Orchestration Layer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="50" y="680" width="150" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-input" value="20k ft: Input Domain" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="220" y="680" width="120" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-middle" value="10k ft: Middle Domain" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="360" y="680" width="120" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-output" value="5k ft: Output Domain" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="500" y="680" width="120" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-infra" value="Ground Level: Infrastructure" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="640" y="680" width="150" height="30" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
