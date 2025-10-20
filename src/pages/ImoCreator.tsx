@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Blueprint, FileText, Settings, CheckCircle, AlertCircle } from 'lucide-react';
+import { Layers, FileText, Settings, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,7 +9,7 @@ const ImoCreator = () => {
   const [currentStage, setCurrentStage] = useState('overview');
 
   const stages = [
-    { id: 'overview', name: 'Overview', icon: Blueprint, status: 'completed' },
+    { id: 'overview', name: 'Overview', icon: Layers, status: 'completed' },
     { id: 'input', name: 'Input', icon: FileText, status: 'in-progress' },
     { id: 'middle', name: 'Middle', icon: Settings, status: 'pending' },
     { id: 'output', name: 'Output', icon: CheckCircle, status: 'pending' },
@@ -49,7 +49,7 @@ const ImoCreator = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
-            <Blueprint className="h-5 w-5" />
+            <Layers className="h-5 w-5" />
             <span>Blueprint Progress</span>
           </CardTitle>
           <CardDescription>Track your progress through the IMO creation process</CardDescription>

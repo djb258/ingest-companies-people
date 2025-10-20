@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Database, Blueprint, ArrowRight, FileText, Cpu, Settings } from 'lucide-react';
+import { Database, Layers, ArrowRight, FileText, Cpu, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -45,7 +45,7 @@ const Home = () => {
         <Card className="hover:shadow-lg transition-shadow">
           <CardHeader>
             <div className="flex items-center space-x-2">
-              <Blueprint className="h-6 w-6 text-primary" />
+              <Layers className="h-6 w-6 text-primary" />
               <CardTitle>IMO Creator</CardTitle>
             </div>
             <CardDescription>

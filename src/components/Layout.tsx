@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Database, Blueprint, Home, FileText } from 'lucide-react';
+import { Database, Layers, Home, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Layout = () => {
@@ -9,7 +9,7 @@ const Layout = () => {
   const navigation = [
     { name: 'Home', href: '/', icon: Home },
     { name: 'Data Ingestion', href: '/data-ingestion', icon: Database },
-    { name: 'IMO Creator', href: '/imo-creator', icon: Blueprint },
+    { name: 'IMO Creator', href: '/imo-creator', icon: Layers },
     { name: 'Documentation', href: '/docs', icon: FileText },
   ];
 

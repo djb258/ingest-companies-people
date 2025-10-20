@@ -230,25 +230,23 @@ first_name,last_name,email,company,title
                 </ul>
 
                 <h4>Example Usage</h4>
-                <pre className="bg-muted p-2 rounded text-xs">
-# Insert data
-curl -X POST https://render-marketing-db.onrender.com/insert \
-  -H "Content-Type: application/json" \
+                <pre className="bg-muted p-2 rounded text-xs">{`# Insert data
+curl -X POST https://render-marketing-db.onrender.com/insert \\
+  -H "Content-Type: application/json" \\
   -d '{
     "records": [{"field1": "value1"}],
     "target_table": "company.marketing_company"
   }'
 
 # HEIR check
-curl -X POST http://localhost:7001/heir/check \
-  -H "Content-Type: application/json" \
+curl -X POST http://localhost:7001/heir/check \\
+  -H "Content-Type: application/json" \\
   -d '{
     "ssot": {
       "meta": {"app_name": "imo-creator"},
       "doctrine": {"schema_version": "HEIR/1.0"}
     }
-  }'
-                </pre>
+  }'`}</pre>
               </div>
             </CardContent>
           </Card>
